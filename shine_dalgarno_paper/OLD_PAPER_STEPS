@@ -1,0 +1,1182 @@
+tompa shine dalgarno.pdf
+
+
+1. Test the Shine-Delgano sequences for a couple of organisms from Tompa paper with the codon bias scores of the top 250 genes
+http://www.broadinstitute.org/igv/Genomes
+
+1.1 b. subtilis
+ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacillus_subtilis_168_uid57675/
+protein coding genes:
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacillus_subtilis_168_uid57675/NC_000964.ffn
+perl ../useful_scripts/keep_only_valid_orfs.pl b.subtilis_NC_000964.ffn b.subtilis_NC_000964.fa
+read 4176, discarded due to bad end or start 929 and discarded due to stops in the middle: 0
+cat b.subtilis_NC_000964.fa | perl ../useful_scripts/expected_codon_freq.pl > b.subtilis.codon_bias
+
+1.2 e. coli
+ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/
+protein coding genes:
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.ffn
+perl ../useful_scripts/keep_only_valid_orfs.pl e.coli_NC_000913.ffn  e.coli_NC_000913.fa
+read 4321, discarded due to bad end or start 506 and discarded due to stops in the middle: 49
+cat e.coli_NC_000913.fa | perl ../useful_scripts/expected_codon_freq.pl > e.coli_NC_000913.codon_bias
+AGGAGG
+CCUCCU
+
+1.3 m. pneumoniae
+ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Mycoplasma_pneumoniae_309_uid85495/
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Mycoplasma_pneumoniae_309_uid85495/NC_016807.ffn
+just for m.pneuoniae, remove TGA from the checks - this genome does not use TGA as a stop codon
+perl ../useful_scripts/keep_only_valid_orfs.pl m.pneumoniae_NC_016807.ffn m.pneumoniae_NC_016807.fa
+read 707, discarded due to bad end or start 76 and discarded due to stops in the middle: 446
+cat m.pneumoniae_NC_016807.fa | perl ../useful_scripts/expected_codon_freq.pl > m.pneumoniae_NC_016807.codon_bias
+
+1.4 a. fulgidus 
+ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Archaeoglobus_fulgidus_DSM_4304_uid57717/
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Archaeoglobus_fulgidus_DSM_4304_uid57717/NC_000917.ffn
+perl ../useful_scripts/keep_only_valid_orfs.pl a.fulgidus_NC_000917.ffn a.fulgidus_NC_000917.fa
+read 2420, discarded due to bad end or start 576 and discarded due to stops in the middle: 9
+cat a.fulgidus_NC_000917.fa | perl ../useful_scripts/expected_codon_freq.pl > a.fulgidus_NC_000917.codon_bias
+
+1.5 m. jannaschii
+ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Methanocaldococcus_jannaschii_DSM_2661_uid57713/
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Methanocaldococcus_jannaschii_DSM_2661_uid57713/NC_000909.ffn
+perl ../useful_scripts/keep_only_valid_orfs.pl m.jannaschii_NC_000909.ffn m.jannaschii_NC_000909.fa
+read 1714, discarded due to bad end or start 512 and discarded due to stops in the middle: 1
+cat m.jannaschii_NC_000909.fa | perl ../useful_scripts/expected_codon_freq.pl > m.jannaschii_NC_000909.codon_bias
+
+1.6 p. horikoshii
+ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Pyrococcus_horikoshii_OT3_uid57753/
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Pyrococcus_horikoshii_OT3_uid57753/NC_000961.ffn
+perl ../useful_scripts/keep_only_valid_orfs.pl p.horikoshii_NC_000961.ffn p.horikoshii_NC_000961.fa
+read 1950, discarded due to bad end or start 590 and discarded due to stops in the middle: 2
+cat p.horikoshii_NC_000961.fa | perl ../useful_scripts/expected_codon_freq.pl > p.horikoshii_NC_000961.codon_bias
+
+2. Get the codon pair scores for these genomes - hexamers that span SD sequence with up to one substitution should be depleted
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s b.subtilis_NC_000964.fa -o b.subtilis_NC_000964 -z 1000&
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s e.coli_NC_000913.fa -o e.coli_NC_000913 -z 1000&
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s m.pneumoniae_NC_016807.fa -o m.pneumoniae_NC_016807 -z 1000& 
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s a.fulgidus_NC_000917.fa -o a.fulgidus_NC_000917 -z 1000& 
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s m.jannaschii_NC_000909.fa -o m.jannaschii_NC_000909 -z 1000& 
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s p.horikoshii_NC_000961.fa -o p.horikoshii_NC_000961 -z 1000& 
+
+3. Tompa algorithm
+tested the input and output
+now, get the 40 bases upstream of ATG of all genes
+
+3.1 b. subtilis
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacillus_subtilis_168_uid57675/NC_000964.fna
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacillus_subtilis_168_uid57675/NC_000964.gff
+perl get_sequence_upstream_of_gene.pl b.subtilis_NC_000964.fa NC_000964.fna b.subtilis_NC_000964_RBSidentify_input 
+run tompa RBSidentify, specify b.subtilis_NC_000964_RBSidentify_input b.subtilis_NC_000964_RBSidentify_output, 7-mer pattern, 1 subst
+tail -n +27 b.subtilis_NC_000964_RBSidentify_output |  awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > b.subtilis_NC_000964_profile_input 
+run tompa profile with b.subtilis_NC_000964_profile_input b.subtilis_NC_000964_profile_output, 7-mer pattern, 1 subst
+confirmed AGGAGG
+perl get_atcg_freq.pl -i b.subtilis_NC_000964.fa
+u frequency = 0.256374010361516 a frequency = 0.299417780172489
+c frequency = 0.202509314754446 g frequency = 0.241698894711549
+probability of shine delgarno expected: 0.00024, based on frequencies is 0.00031?
+
+3.2 do e. coli 
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.fna
+perl get_sequence_upstream_of_gene.pl e.coli_NC_000913.fa NC_000913.fna e.coli_NC_000913_RBSidentify_input 
+tail -n +27 e.coli_NC_000913_RBSidentify_output |  awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > e.coli_NC_000913_profile_input 
+confirmed AGGAG
+
+3.3 m.pneumoniae
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Mycoplasma_pneumoniae_309_uid85495/NC_016807.fna
+perl get_sequence_upstream_of_gene.pl m.pneumoniae_NC_016807.fa NC_016807.fna m.pneumoniae_NC_016807_RBSidentify_input
+tail -n +27 m.pneumoniae_NC_016807_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > m.pneumoniae_NC_016807_profile_input
+confirmed GGAGG
+
+3.4 a.fulgidus
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Archaeoglobus_fulgidus_DSM_4304_uid57717/NC_000917.fna
+perl get_sequence_upstream_of_gene.pl a.fulgidus_NC_000917.fa NC_000917.fna a.fulgidus_NC_000917_RBSidentify_input 
+tail -n +27 a.fulgidus_NC_000917_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > a.fulgidus_NC_000917_profile_input
+confirmed GAGGTG
+
+3.5 m. jannaschii
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Methanocaldococcus_jannaschii_DSM_2661_uid57713/NC_000909.fna
+perl get_sequence_upstream_of_gene.pl m.jannaschii_NC_000909.fa NC_000909.fna m.jannaschii_NC_000909_RBSidentify_input
+tail -n +27 m.jannaschii_NC_000909_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > m.jannaschii_NC_000909_profile_input  
+confirmed GGTGA
+
+3.6 p. horikoshii
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Pyrococcus_horikoshii_OT3_uid57753/NC_000961.fna
+perl get_sequence_upstream_of_gene.pl p.horikoshii_NC_000961.fa NC_000961.fna p.horikoshii_NC_000961_RBSidentify_input
+tail -n +27 p.horikoshii_NC_000961_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > p.horikoshii_NC_000961_profile_input
+confirmed GAGGTG
+
+4. Now get the 20 maximally distinct bacterial species, and see if the Shine Delgano sequence is the same
+For each genome, get the cleaned up fa file (both for codon bias and for the shine delgano calculation), and the fna file to get the upstream sequences for the shine-delgano
+
+4.1 Aquifex
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Aquifex_aeolicus_VF5_uid57765/NC_000918.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Aquifex_aeolicus_VF5_uid57765/NC_000918.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_000918.ffn aquifex.fa
+read 1529, discarded due to bad end or start 271 and discarded due to stops in the middle: 1
+perl get_sequence_upstream_of_gene.pl aquifex.fa NC_000918.fna aquifex_RBSidentify_input
+tail -n +27 aquifex_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > aquifex_profile_input
+GGAGG - checks out, at the end
+cat aquifex.fa | perl ../useful_scripts/expected_codon_freq.pl > aquifex.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s aquifex.fa -o aquifex_cps  -z 1000&
+perl get_sd_partial_matches.pl -s GGAGG -c aquifex_cps_pairwise_syn_shuffle_frm123.csv
+
+4.2 Thermotoga
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermotoga_neapolitana_DSM_4359_uid59065/NC_011978.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermotoga_neapolitana_DSM_4359_uid59065/NC_011978.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_011978.ffn thermotoga.fa
+read 1937, discarded due to bad end or start 916 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl thermotoga.fa NC_011978.fna thermotoga_RBSidentify_input
+tail -n +27 thermotoga_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > thermotoga_profile_input
+GGAGGT - in rRNA, but not at the end
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s thermotoga.fa -o thermotoga_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGAGGT -c thermotoga_cps_pairwise_syn_shuffle_frm123.csv
+find ACCTCC
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Thermotoga_neapolitana_DSM_4359_uid21023/CP000916.frn
+perl get_sequences_after_gene.pl CP000916.frn NC_011978.fna CP000916_after_frn
+
+4.3 Thermus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermus_scotoductus_SA_01_uid62273/NC_014974.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermus_scotoductus_SA_01_uid62273/NC_014974.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_014974.ffn thermus.fa
+read 2446, discarded due to bad end or start 607 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl thermus.fa NC_014974.fna thermus_RBSidentify_input
+tail -n +27 thermus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > thermus_profile_input 
+AGGAGG - checks out, at the end
+cat thermus.fa | perl ../useful_scripts/expected_codon_freq.pl > thermus.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s thermus.fa -o thermus_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGAGG -c thermus_cps_pairwise_syn_shuffle_frm123.csv
+
+4.4 Chloroflexus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Chloroflexus_aurantiacus_J_10_fl_uid57657/NC_010175.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Chloroflexus_aurantiacus_J_10_fl_uid57657/NC_010175.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_010175.ffn chloroflexus.fa
+read 3853, discarded due to bad end or start 418 and discarded due to stops in the middle: 1
+perl get_sequence_upstream_of_gene.pl chloroflexus.fa NC_010175.fna chloroflexus_RBSidentify_input
+tail -n +27 chloroflexus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > chloroflexus_profile_input
+AGGAG - checks out, at the end
+cat chloroflexus.fa | perl ../useful_scripts/expected_codon_freq.pl > chloroflexus.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s chloroflexus.fa -o chloroflexus_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGAG -c chloroflexus_cps_pairwise_syn_shuffle_frm123.csv
+
+4.5 Arthrobacter
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Arthrobacter_arilaitensis_Re117_uid53509/NC_014550.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Arthrobacter_arilaitensis_Re117_uid53509/NC_014550.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_014550.ffn athrobacter.fa
+read 3376, discarded due to bad end or start 878 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl athrobacter.fa NC_014550.fna athrobacter_RBSidentify_input
+tail -n +27 athrobacter_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > athrobacter_profile_input
+AGGA - checks out, this is the actual sequence found at the end (AAGGA is not found, and first A was borderline anyhow)
+cat athrobacter.fa | perl ../useful_scripts/expected_codon_freq.pl > athrobacter.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s athrobacter.fa -o athrobacter_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGA -c athrobacter_cps_pairwise_syn_shuffle_frm123.csv
+
+4.6 Heliobacterium
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Heliobacterium_modesticaldum_Ice1_uid58279/NC_010337.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Heliobacterium_modesticaldum_Ice1_uid58279/NC_010337.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_010337.ffn heliobacterium.fa
+read 2999, discarded due to bad end or start 1132 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl heliobacterium.fa NC_010337.fna heliobacterium_RBSidentify_input
+tail -n +27 heliobacterium_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > heliobacterium_profile_input
+GGAGG - checks out, at the end
+cat heliobacterium.fa | perl ../useful_scripts/expected_codon_freq.pl > heliobacterium.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s heliobacterium.fa -o heliobacterium_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGAGG -c heliobacterium_cps_pairwise_syn_shuffle_frm123.csv
+
+4.7 Chlamydia
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Chlamydia_trachomatis_D_SotonD5_uid196773/NC_020943.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Chlamydia_trachomatis_D_SotonD5_uid196773/NC_020943.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_020943.ffn chlamydia.fa
+read 891, discarded due to bad end or start 113 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl chlamydia.fa NC_020943.fna chlamydia_RBSidentify_input
+tail -n +27 chlamydia_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > chlamydia_profile_input
+AGGAG - z-score way too low 
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s chlamydia.fa -o chlamydia_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGAG -c chlamydia_cps_pairwise_syn_shuffle_frm123.csv
+
+4.8 synechococcus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Synechococcus_CC9311_uid58123/NC_008319.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Synechococcus_CC9311_uid58123/NC_008319.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_008319.ffn synechococcus.fa
+read 2892, discarded due to bad end or start 1100 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl synechococcus.fa NC_008319.fna synechococcus_RBSidentify_input
+tail -n +27 synechococcus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > synechococcus_profile_input
+TGATC - low z-scores (highest ~8)
+TGATC - checks out, at the end
+cat synechococcus.fa | perl ../useful_scripts/expected_codon_freq.pl > synechococcus.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s synechococcus.fa -o synechococcus.cps -z 1000&
+perl get_sd_partial_matches.pl -s TGATC -c synechococcus.cps_pairwise_syn_shuffle_frm123.csv
+
+4.9 e.coli
+AGGAG - checks out, at the end
+e.coli_NC_000913.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s e.coli_NC_000913.fa -o e.coli_NC_000913_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGAG -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv
+
+4.10 flavobacterium 
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Flavobacterium_branchiophilum_FL_15_uid73421/NC_016001.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Flavobacterium_branchiophilum_FL_15_uid73421/NC_016001.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_016001.ffn flavobacterium.fa
+read 2867, discarded due to bad end or start 151 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl flavobacterium.fa NC_016001.fna flavobacterium_RBSidentify_input
+tail -n +27 flavobacterium_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > flavobacterium_profile_input
+TTTG - different!!!, not found
+look for CAAA
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Flavobacterium_branchiophilum_FL_15_uid67123/FQ859183.frn
+perl get_sequence_after_gene.pl FQ859183.frn NC_016001.fna FQ859183_after_rna
+still not found
+
+4.11 Methanopyrus 
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanopyrus_kandleri_AV19_uid57883/NC_003551.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanopyrus_kandleri_AV19_uid57883/NC_003551.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_003551.ffn methanopyrus.fa
+read 1687, discarded due to bad end or start 1183 and discarded due to stops in the middle: 6
+perl get_sequence_upstream_of_gene.pl methanopyrus.fa NC_003551.fna methanopyrus_RBSidentify_input
+tail -n +27 methanopyrus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > methanopyrus_profile_input
+GGTGA - checks out, at the end of 16S like tompa's archae? 
+cat methanopyrus.fa | perl ../useful_scripts/expected_codon_freq.pl > methanopyrus.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s methanopyrus.fa -o methanopyrus_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGTGA -c methanopyrus_cps_pairwise_syn_shuffle_frm123.csv
+
+4.12 Methanobacterium
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanobacterium_AL_21_uid63623/NC_015216.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanobacterium_AL_21_uid63623/NC_015216.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_015216.ffn methanobacterium.fa
+read 2493, discarded due to bad end or start 382 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl methanobacterium.fa NC_015216.fna methanobacterium_RBSidentify_input
+tail -n +27 methanobacterium_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > methanobacterium_profile_input
+GGAGG - checks out, shine delgarno
+cat methanobacterium.fa | perl ../useful_scripts/expected_codon_freq.pl > methanobacterium.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s methanobacterium.fa -o methanobacterium_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGAGG -c methanobacterium_cps_pairwise_syn_shuffle_frm123.csv
+
+4.13 methanococcus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanococcus_aeolicus_Nankai_3_uid58823/NC_009635.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanococcus_aeolicus_Nankai_3_uid58823/NC_009635.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_009635.ffn methanococcus.fa
+read 1490, discarded due to bad end or start 148 and discarded due to stops in the middle: 5
+perl get_sequence_upstream_of_gene.pl methanococcus.fa NC_009635.fna methanococcus_RBSidentify_input
+tail -n +27 methanococcus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > methanococcus_profile_input
+GGTGA - checks out, like tompas archae
+cat methanococcus.fa | perl ../useful_scripts/expected_codon_freq.pl > methanococcus.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s methanococcus.fa -o methanococcus_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGTGA -c methanococcus_cps_pairwise_syn_shuffle_frm123.csv
+
+4.14 Thermoplasma
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermoplasma_volcanium_GSS1_uid57751/NC_002689.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermoplasma_volcanium_GSS1_uid57751/NC_002689.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_002689.ffn thermoplasma.fa
+read 1501, discarded due to bad end or start 250 and discarded due to stops in the middle: 12
+perl get_sequence_upstream_of_gene.pl thermoplasma.fa NC_002689.fna thermoplasma_RBSidentify_input
+tail -n +27 thermoplasma_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > thermoplasma_profile_input
+GAGGTG - checks out, like tompas archae
+cat thermoplasma.fa | perl ../useful_scripts/expected_codon_freq.pl > thermoplasma.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s thermoplasma.fa -o thermoplasma_cps -z 1000&
+perl get_sd_partial_matches.pl -s GAGGTG -c thermoplasma_cps_pairwise_syn_shuffle_frm123.csv
+
+4.15 Archaeoglobus
+GAGGTG - checks out, at the end
+a.fulgidus_NC_000917.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s a.fulgidus_NC_000917.fa -o a.fulgidus_NC_000917_cps -z 1000&
+perl get_sd_partial_matches.pl -s GAGGTG -c a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv
+
+4.16 Haloferax
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Haloferax_mediterranei_ATCC_33500_uid167315/NC_017941.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Haloferax_mediterranei_ATCC_33500_uid167315/NC_017941.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_017941.ffn haloferax.fa
+read 2951, discarded due to bad end or start 551 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl haloferax.fa NC_017941.fna haloferax_RBSidentify_input
+tail -n +27 haloferax_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > haloferax_profile_input
+GGAGGTG - not found, part shine, part archae?
+FOUND after all at the end!!! -re-do analysis
+
+4.17 Methanospirillum
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanospirillum_hungatei_JF_1_uid58181/NC_007796.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Methanospirillum_hungatei_JF_1_uid58181/NC_007796.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_007796.ffn methanospirillum.fa
+read 3131, discarded due to bad end or start 309 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl methanospirillum.fa NC_007796.fna methanospirillum_RBSidentify_input
+tail -n +27 methanospirillum_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > methanospirillum_profile_input
+AGGAG - checks out, at the very end; like shine, but extra A at the end
+cat methanospirillum.fa | perl ../useful_scripts/expected_codon_freq.pl > methanospirillum.codon_bias
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s methanospirillum.fa -o methanospirillum_cps -z 1000&
+perl get_sd_partial_matches.pl -s AGGAG -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv
+
+4.18 Marine group 1 low temperature; nitrosopumilus 
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Nitrosopumilus_maritimus_SCM1_uid58903/NC_010085.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Nitrosopumilus_maritimus_SCM1_uid58903/NC_010085.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_010085.ffn nitrosopumilus.fa 
+read 1796, discarded due to bad end or start 435 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl nitrosopumilus.fa NC_010085.fna nitrosopumilus_RBSidentify_input
+tail -n +27 nitrosopumilus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > nitrosopumilus_profile_input
+too low to get a pattern
+
+4.19 Sulfolobus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid58379/NC_007181.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid58379/NC_007181.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_007181.ffn sulfolobus.fa
+read 2224, discarded due to bad end or start 593 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl sulfolobus.fa NC_007181.fna sulfolobus_RBSidentify_input
+tail -n +27 sulfolobus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > sulfolobus_profile_input
+GGTGA - not found, like archae
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s sulfolobus.fa -o sulfolobus_cps -z 1000&
+TCACC
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid13935/CP000077.frn
+perl get_sequences_after_gene.pl CP000077.frn NC_007181.fna CP000077_after_frn
+TCAC found at the end... loop?  consider shorter SD?
+
+4.20 Thermoproteus
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermoproteus_tenax_Kra_1_uid74443/NC_016070.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermoproteus_tenax_Kra_1_uid74443/NC_016070.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_016070.ffn thermoproteus.fa
+read 2049, discarded due to bad end or start 698 and discarded due to stops in the middle: 1
+perl get_sequence_upstream_of_gene.pl thermoproteus.fa NC_016070.fna thermoproteus_RBSidentify_input
+tail -n +27 thermoproteus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > thermoproteus_profile_input
+TTTAAA - not found, completely different..
+TTTAAA
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Thermoproteus_tenax_Kra_1_uid49419/FN869859.frn
+perl get_sequences_after_gene.pl FN869859.frn NC_016070.fna FN869859_after_frn
+still not found
+
+* do for justin
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Mycobacterium_tuberculosis_uid185758/NC_020089.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Mycobacterium_tuberculosis_uid185758/NC_020089.fna
+perl keep_only_valid_orfs_diff_starts.pl NC_020089.ffn m.tuberculosis.fa  # do not discard non-ATG starts
+perl get_sequence_upstream_of_gene.pl m.tuberculosis.fa NC_020089.fna tuberculosis_RBSidentify_input # temporarily comment out checks for ATG and GAT
+tail -n +27 tuberculosis_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > tuberculosis_profile_input
+AGGAG
+
+# file called partial_matches contains codon pair scores for the partial matches of the sd sequences
+
+# look for AGGAG in all e-coli frames, see if have ATG down the line
+perl look_for_starts_in_frame.pl -c e.coli_NC_000913.fa > bla
+
+
+# look at codon scores for these genomes
+sd_match_codon_scores file
+
+
+-------------------------
+for paper, for ecoli:
+# pvalue for codon pair partial matches
+perl get_pvalue_cp_partial_matches2.pl -s AGGAGG -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv
+####pvalue <= 0.0015 10K trials
+pvalue is <=0.04 10K trials
+
+# pvalue for rel syn codon usage 
+cat e.coli_NC_000913.fa | perl get_pvalue_rel_syn_codon_usage.pl
+pvalue <= 0.0031 10K trials
+# try rel syn codon usage only with rrna
+ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.frn
+perl keep_only_ribosomal_rna.pl NC_000913.frn  e.coli_ribosomal_NC_000913.fa
+cat e.coli_ribosomal_NC_000913.fa | perl get_pvalue_rel_syn_codon_usage.pl
+terrible p-value ~= 0.7 
+
+# get justin's tab file, and his gap and signal scripts
+gap_score.pl signal_score.pl ecoli_whole_genome_shuffle_1000z_pairwise_syn_shuffle_frm123.tab
+Gap: Gives more weight to highly avoided codon pair scores and those that are more avoided in the coding frame.
+Gap score = Coding frame score - ( (Frame 2 score+Frame 3 score) / 2 ) 
+Signal: Ranks codon-pairs by the average score in all  three frames.
+Signal score = ( coding frame score + frame2 score + frame3 score ) /3
+
+cat e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score.pl > e.coli.signal_scores.csv
+sort -n -k 2 e.coli.signal_scores.csv > sorted_e.coli.signal_scores.csv
+
+cat ecoli_whole_genome_shuffle_1000z_pairwise_syn_shuffle_frm123.tab | perl signal_score.pl > justin_e.coli.signal_scores.csv
+sort -n -k 2 justin_e.coli.signal_scores.csv > justin_sorted_e.coli.signal_scores.csv
+
+
+perl get_x_of_y_worst_hexamer_matches_to_sd.pl -s AGGAGG -c sorted_e.coli.signal_scores.csv -n 100
+perl get_x_of_y_worst_hexamer_matches_to_sd.pl -s AGGAGG -c justin_sorted_e.coli.signal_scores.csv -n 100
+
+cat e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv | perl gap_score.pl > e.coli.gap_scores.csv
+sort -n -k 2 e.coli.gap_scores.csv > sorted_e.coli.gap_scores.csv
+perl get_x_of_y_worst_hexamer_matches_to_sd.pl -s AGGAGG -c sorted_e.coli.gap_scores.csv -n 100
+
+
+time perl find_depletion_in_coding_regions.pl -n e.coli_NC_000913.fa -o ecoli_depeltion -q 10000
+10K permutations, pvalue <= 0.00001 
+real    594m5.396s
+time perl find_depletion_in_coding_regions_5_match.pl -n e.coli_NC_000913.fa -o ecoli_depeltion -q 1
+
+#################################################################
+ # SD depletion score (ln (observed/expected))
+
+perl get_atcg_freq.pl -i e.coli_NC_000913.fa -s AGGAGG
+observed = 191
+expected = 1154.93732294542
+score is = -1.7995279275887
+
+perl get_atcg_freq.pl -i thermus.fa -s AGGAGG
+observed = 3801
+expected = 585.228783475318
+score is = 1.87101661534657
+
+perl get_atcg_freq.pl -i chloroflexus.fa -s AGGAG
+observed = 1924
+expected = 3845.85703740816
+score is = -0.692590122471437
+
+perl get_atcg_freq.pl -i methanospirillum.fa -s AGGAG
+observed = 4734
+expected = 3063.64215038003
+score is = 0.435166057685549
+
+perl get_atcg_freq.pl -i athrobacter.fa -s AGGA
+observed = 8191
+expected = 8407.40282249402
+score is = -0.0260766156013387
+
+perl get_atcg_freq.pl -i heliobacterium.fa -s GGAGG 
+observed = 2919
+expected = 2625.40680044348
+score is = 0.10600523623773
+
+perl get_atcg_freq.pl -i methanobacterium.fa -s GGAGG
+observed = 1529
+expected = 1122.03917696741
+score is = 0.309466203372757
+
+perl get_atcg_freq.pl -i aquifex.fa -s GGAGG 
+observed = 2448
+expected = 1413.30560088202
+score is = 0.549340006284274
+
+perl get_atcg_freq.pl -i a.fulgidus_NC_000917.fa -s GAGGTG 
+observed = 1148
+expected = 672.238987377351
+score is = 0.535162663601647
+
+perl get_atcg_freq.pl -i thermoplasma.fa -s GAGGTG 
+observed = 207
+expected = 262.117716242946
+score is = -0.236074908228518
+
+perl get_atcg_freq.pl -i methanopyrus.fa -s GGTGA
+observed = 1121
+expected = 632.104734968824
+score is = 0.572921322767946
+
+perl get_atcg_freq.pl -i methanococcus.fa -s GGTGA
+observed = 437
+expected = 915.602114547307
+score is = -0.739648702446414
+
+#################################################################
+# each 5-long SD, produce an excel sheet with codon pairs for 5/6 match(8 total), for 6-long SD, same as e-coli, add columns with gap and signal scores
+# no synecoccus, no m_hungatei and a_arilaitensis because their SD sequences are only 4 long
+
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv > 5_6_e_coli_SD_matches.csv &
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGAGG -c aquifex_cps_pairwise_syn_shuffle_frm123.csv > 5_6_a_aeolicus_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c thermus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_t_scotoductus_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAG -c chloroflexus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_c_aurantiacus_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGAGG -c heliobacterium_cps_pairwise_syn_shuffle_frm123.csv > 5_6_h_modesticaldum_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGAGG -c methanobacterium_cps_pairwise_syn_shuffle_frm123.csv > 5_6_methanobacterium_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGTGA -c methanopyrus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_m_kandleri_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGTGA -c methanococcus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_m_aeolicus_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c thermoplasma_cps_pairwise_syn_shuffle_frm123.csv > 5_6_t_volcanium_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv > 5_6_a_fulgidus_SD_matches.csv&
+
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAG -c athrobacter_cps_pairwise_syn_shuffle_frm123.csv > 5_6_a_arilaitensis_SD_matches.csv&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAG -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv > 5_6_m_hungatei_SD_matches.csv&
+
+
+# now get the signal score for all of these, and calculate the t-test and thus the p-values
+
+cat e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > e.coli.signal_scores.csv&
+cat aquifex_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > a.aeolicus.signal_scores.csv&
+cat thermus_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > t.scotoductus.signal_scores.csv&
+cat chloroflexus_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > c.aurantiacus.signal_scores.csv&
+cat heliobacterium_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > h.modesticaldum.signal_scores.csv&
+cat methanobacterium_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > methanobacterium.signal_scores.csv&
+cat methanopyrus_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > m.kandleri.signal_scores.csv&
+cat methanococcus_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > m.aeolicus.signal_scores.csv&
+cat thermoplasma_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > t.volcanium.signal_scores.csv&
+cat a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > a.fulgidus.signal_scores.csv&
+
+# do the T-test in Excel for all signal scores as array1, all 5_6 match signal scores as array 2, 2 tails, type 3
+# all calculations are in *.t_test.xls
+5_6 match signal average less than total signal average
+m.aeolicus,0.001
+methanobacterium,0.010
+e.coli,0.034
+a.aeolicus,0.171
+h.modesticaldum,0.313
+***b.subtilis,0.4
+c.aurantiacus,0.836
+5_6 match signal average is positive and greater than total signal average
+t.scotoductus,0.000055
+a.fulgidus,0.023
+m.kandleri,0.093
+***s.pneumoniae,0.179
+***p.furiosus,0.236
+***p.horikoshii,0.28
+t.volcanium,0.239
+
+# now do the same thing for f1 codon pair scores 
+cat e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > e.coli.f1_scores.csv&
+cat aquifex_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > a.aeolicus.f1_scores.csv&
+cat thermus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > t.scotoductus.f1_scores.csv&
+cat chloroflexus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > c.aurantiacus.f1_scores.csv&
+cat heliobacterium_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > h.modesticaldum.f1_scores.csv&
+cat methanobacterium_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > methanobacterium.f1_scores.csv&
+cat methanopyrus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > m.kandleri.f1_scores.csv&
+cat methanococcus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > m.aeolicus.f1_scores.csv&
+cat thermoplasma_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > t.volcanium.f1_scores.csv&
+cat a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > a.fulgidus.f1_scores.csv&
+
+cat athrobacter_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > a.arilaitensis.f1_scores.csv&
+cat methanospirillum_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > m.hungatei.f1_scores.csv&
+
+# t tests in Excel for all f1 scores are array1, all 5_6 match scores are array 2, 2 tails, type 3
+# all calculations are in *.t_test.xls
+
+5_6 match f1 average less than total f1 average
+methanobacterium,0.028
+m.aeolicus,0.067
+***p.furiosus,0.074
+e.coli,0.094
+a.aeolicus,0.133
+***p.horikoshii,0.2
+h.modesticaldum,0.468
+t.scotoductus,0.64
+***b.subtilis,0.668
+t.volcanium,0.811
+***s.pnemoniae,0.964
+5_6 match f1 average is positive and greater than total f1 average
+a.fulgidus,0.130
+c.auranticus,0.445
+m.kandleri,0.899
+
+# this is OLD Z-score calculation, no good, ignore
+http://graphpad.com/quickcalcs/PValue1.cfm
+bacteria,signal_avg,signal_stdev,5_6_match_signal_avg,z-score,two-tailed_p_value
+e.coli,-0.102,0.352,-0.33,-0.65,0.52
+a.aeolicus,-0.125,0.4,-0.217,-0.23,0.82
+t.scotoductus,-0.2,0.47,0.17,0.79,0.43
+c.aurantiacus,-0.123,0.392,-0.132,-0.023,0.98
+h.modesticaldum,-0.073,0.28,-0.131,-0.21,0.83
+methanobacterium,-0.074,0.28,-0.4,-1.16,0.25
+m.kandleri,0.014,0.269,0.073,0.22,0.83
+m.aeolicus,-0.07,0.53,-0.42,-0.66,0.5
+t.volcanium,-0.021,0.2,0.023,0.215,0.83
+a.fulgidus,-0.114,0.393,0.083,0.5,0.62
+
+###### 
+Fisher's P values and rankings of codon matches
+Fisher.test <- function(p) {
+  Xsq <- -2*sum(log(p))
+  p.val <- pchisq(Xsq, df = 2*length(p), lower.tail = FALSE)
+  return(c(Xsq = Xsq, p.value = p.val))
+}
+ 
+p <- c(.01, .2, .3)
+Fisher.test(p = p)  # p-value = 0.022
+
+sd_match_codon_scores was produced by hand from looking at ranks in the *.codon_bias scripts
+Fisher's test applied to get the combined p-values (the rank among the codons, and the rank among the synonymous codons)
+
+the only border-line significance with 0.05 is the codon rank fisher for e.coli!!!!
+
+
+##### 
+old graph_ rank_x_syn_rank
+
+cat e.coli_NC_000913.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n e_coli > e_coli_rank_x_syn_rank.csv&
+cat aquifex.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n a_aeolicus > a_aeolicus_rank_x_syn_rank.csv&
+cat thermus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n t_scotoductus > t_scotoductus_rank_x_syn_rank.csv& 
+cat chloroflexus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n c_aurantiacus > c_aurantiacus_rank_x_syn_rank.csv& 
+cat athrobacter.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n a_arilaitensis > a_arilaitensis_rank_x_syn_rank.csv&
+cat heliobacterium.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n h_modesticaldum > h_modesticaldum_rank_x_syn_rank.csv& 
+cat methanospirillum.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n m_hungatei > m_hungatei_rank_x_syn_rank.csv&
+cat methanobacterium.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n methanobacterium > methanobacterium_rank_x_syn_rank.csv& 
+cat synechococcus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n synechococcus > synechococcus_rank_x_syn_rank.csv& 
+cat methanopyrus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n m_kandleri > m_kandleri_rank_x_syn_rank.csv& 
+cat a.fulgidus_NC_000917.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n a_fulgidus > fulgidus_rank_x_syn_rank.csv& 
+cat thermoplasma.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n t_volcanium > t_volcanium_rank_x_syn_rank.csv&
+cat methanococcus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n m_aeolicus > m_aeolicus_rank_x_syn_rank.csv& 
+
+cat p.furiosus.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n p_furiosus > p_furiosus_x_syn_rank.csv&
+cat p.horikoshii_NC_000961.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n p_horikoshii > p_horikoshii_x_syn_rank.csv&  
+cat b.subtilis_NC_000964.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n b_subtils > b_subtilis_x_syn_rank.csv& 
+cat s.pneumoniae.fa | perl paper_expected_codon_freq_rank_x_syn_rank.pl -n s_pneumoniae > s_pneumoniae_x_syn_rank.csv&
+
+p_furiosus,34,6,6,105,102 GAGGTG
+p_horikoshii,9,3,6,90,148 GAGGTG
+b_subtils,354,20,28,114,50 AGGAGG
+s_pneumoniae,295,32,36,11,152 AGGAG
+
+cat the resulting files > rank_x_syn_rank
+
+# old figure 2
+
+ticks = {"E. coli", "B. subtilis", "T. scotoductus", "C. aurantiacus",
+    "S. pneumoniae", "M. hungatei", "A. arilaitensis", 
+   "H. modesticaldum", "M. lacus", "A. aeolicus", "A. fulgidus", 
+   "T. volcanium", "P. furiosus", "P. horikoshii", "M. kandleri", 
+   "M. aeolicus"};
+ticks2 = {AGG, GAG, GGA, GGT, GTG};
+ticksR = {AGGAGG, AGGAGG, AGGAGG, AGGAG, AGGAG, AGGAG, AGGA, GGAGG, 
+   GGAGG, GGAGG, GAGGTG, GAGGTG, GAGGTG, GAGGTG, GGTGA, GGTGA};
+
+rticksR = {#, Style[ticksR[[#]], 16, Bold]} & /@ Range[16];
+rticks = {#, Style[ticks[[#]], 16, Bold]} & /@ Range[16];
+vticks = {#, Style[Rotate[ticks2[[#]], Pi/2], Bold, 16]} & /@ Range[5];
+
+MatrixPlot[{{366, 46, 196, 26, 10}, {354, 20, 28, 114, 50}, {75, 2, 
+   93, 148, 4}, {300, 30, 188, 8, 10}, {295, 32, 36, 11, 152}, {147, 
+   14, 9, 44, 148}, {285, 26, 60, 96, 8}, {260, 14, 140, 96, 30}, {84,
+    68, 6, 30, 87}, {13, 10, 7, 50, 78}, {4, 1, 12, 128, 40}, {34, 6, 
+   6, 105, 102}, {9, 3, 6, 90, 148}, {20, 28, 15, 75, 120}, {48, 1, 
+   84, 15, 2}, {84, 40, 8, 42, 111}}, 
+ FrameTicks -> {{rticks, rticksR}, {None, vticks}}]
+
+
+#### final Figure Mathematica code!!!!! - numbers carefully checked
+perl paper_get_codon_freq_for_figure2.pl -f e.coli_NC_000913.codon_bias -n ecoli 
+perl paper_get_codon_freq_for_figure2.pl -f b.subtilis.codon_bias -n b_subtilis 
+perl paper_get_codon_freq_for_figure2.pl -f thermus.codon_bias -n thermus 
+perl paper_get_codon_freq_for_figure2.pl -f e.rectale.codon_bias -n rectale 
+perl paper_get_codon_freq_for_figure2.pl -f r.torques_codon_bias -n torques 
+perl paper_get_codon_freq_for_figure2.pl -f chloroflexus.codon_bias -n chloroflexus 
+perl paper_get_codon_freq_for_figure2.pl -f s.pneumoniae.codon_bias -n s_pneumoniae 
+perl paper_get_codon_freq_for_figure2.pl -f methanospirillum.codon_bias -n methanospirilium 
+perl paper_get_codon_freq_for_figure2.pl -f athrobacter.codon_bias -n arthrobacter 
+perl paper_get_codon_freq_for_figure2.pl -f heliobacterium.codon_bias -n heliobacterium  
+perl paper_get_codon_freq_for_figure2.pl -f methanobacterium.codon_bias -n methanobacterium 
+perl paper_get_codon_freq_for_figure2.pl -f aquifex.codon_bias -n aquifex 
+perl paper_get_codon_freq_for_figure2.pl -f t.neapolitana.codon_bias -n neapolitana
+perl paper_get_codon_freq_for_figure2.pl -f a.fulgidus_NC_000917.codon_bias -n a_fulgidus 
+perl paper_get_codon_freq_for_figure2.pl -f thermoplasma.codon_bias -n thermoplasma 
+perl paper_get_codon_freq_for_figure2.pl -f p.furiosus.codon_bias -n p_furiosus
+perl paper_get_codon_freq_for_figure2.pl -f p.horikoshii_NC_000961.codon_bias -n p_horikoshii 
+perl paper_get_codon_freq_for_figure2.pl -f h.mediterranei.codon_bias -n mediterranei   
+perl paper_get_codon_freq_for_figure2.pl -f methanopyrus.codon_bias -n methanopyrus 
+perl paper_get_codon_freq_for_figure2.pl -f methanococcus.codon_bias -n methanococcus
+perl paper_get_codon_freq_for_figure2.pl -f s.acidocaldarius.codon_bias -n acidocaldarius  
+
+ecoli,1.04,17.76,7.76,24.91,26.16
+b_subtilis,3.69,23.23,21.97,12.75,17.5
+thermus,15.65,61.04,11.27,7.04,51.01
+rectale,7.46,40.54,26.93,16.48,19.06
+torques,3.27,29.72,38.67,16.75,15.6
+chloroflexus,1.36,25.36,8.55,27.87,26.95
+s_pneumoniae,2.11,21.27,20.3,26.64,12.06
+methanospirilium,8.41,29.15,27.88,18.55,12.05
+arthrobacter,2.21,26.26,13.9,13.24,29.4
+heliobacterium,4.4,33.93,11.28,12.39,23.46
+methanobacterium,10.53,12.82,33.52,22.73,14.66
+aquifex,26.23,33.77,33.65,15.72,15.35
+neapolitana,19.53,35.59,32.86,19.74,34.51
+a_fulgidus,29.71,61.58,25.36,13.29,21.54
+thermoplasma,20.39,23.54,22.56,17.18,11.43
+p_furiosus,21.19,41.27,37.43,12.61,13.2
+p_horikoshii,31.09,43.81,32.94,15.42,11.41
+mediterranei,1.08,44.53,12.49,19.12,17.4
+methanopyrus,16.92,73.93,18.23,22.89,41.02
+methanococcus,6.82,15.02,34.56,14.99,8.25
+acidocaldarius,16.17,31.59,27.5,24.39,14.4
+
+ticks = {"E. coli", "B. subtilis", "T. scotoductus", "C. aurantiacus",
+    "S. pneumoniae", "M. hungatei", "A. arilaitensis", 
+   "H. modesticaldum", "M. lacus", "A. aeolicus", "A. fulgidus", 
+   "T. volcanium", "P. furiosus", "P. horikoshii", "M. kandleri", 
+   "M. aeolicus"};
+ticks2 = {AGG, GAG, GGA, GGT, GTG};
+ticksR = {AGGAGG, AGGAGG, AGGAGG, AGGAG, AGGAG, AGGAG, AGGA, GGAGG, 
+   GGAGG, GGAGG, GAGGTG, GAGGTG, GAGGTG, GAGGTG, GGTGA, GGTGA};
+
+rticksR = {#, Style[ticksR[[#]], 16, Bold]} & /@ Range[16];
+rticks = {#, Style[ticks[[#]], 16, Bold]} & /@ Range[16];
+vticks = {#, Style[Rotate[ticks2[[#]], Pi/2], Bold, 16]} & /@ Range[5];
+
+MatrixPlot[ {{1.04,17.76,7.76,24.91,26.16},
+{3.69,23.23,21.97,12.75,17.5},
+{15.65,61.04,11.27,7.04,51.01},
+{1.36,25.36,8.55,27.87,26.95},
+{2.11,21.27,20.3,26.64,12.06},
+{8.41,29.15,27.88,18.55,12.05},
+{2.21,26.26,13.9,13.24,29.4},
+{4.4,33.93,11.28,12.39,23.46},
+{10.53,12.82,33.52,22.73,14.66},
+{26.23,33.77,33.65,15.72,15.35},
+{29.71,61.58,25.36,13.29,21.54},
+{20.39,23.54,22.56,17.18,11.43},
+{21.19,41.27,37.43,12.61,13.2},
+{31.09,43.81,32.94,15.42,11.41},
+{16.92,73.93,18.23,22.89,41.02},
+{6.82,15.02,34.56,14.99,8.25}},
+ FrameTicks -> {{rticks, rticksR}, {None, vticks}},
+ColorFunction -> (ColorData["LightTemperatureMap"][
+     Rescale[#, {1, 74}]] &), ColorFunctionScaling -> False]
+
+##### 
+# papers to look over:
+Correlations between Shine-Dalgarno Sequences and Gene Features Such as Predicted Expression Levels and Operon Structures
+
+Jiong Ma1,
+Allan Campbell1, and
+Samuel Karlin2,*
+2.  Also of interest, 
+
+Defining the Bacteroides Ribosomal Binding Site
+
+Udo Wegmanna,
+Nikki Horna and
+Simon R. Cardinga,b
+
+-------------------------
+
+# try methosprillum: AGGAG Terrible
+perl get_pvalue_cp_partial_matches.pl -s AGGAG -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv 
+pvalue is 0.9767 is terrible
+cat methanospirillum.fa | perl get_pvalue_rel_syn_codon_usage.pl
+0.69
+
+# try aquifex GGAGG 
+perl get_pvalue_cp_partial_matches.pl -s GGAGG -c aquifex_cps_pairwise_syn_shuffle_frm123.csv
+pvalue is terrible : 1
+cat aquifex.fa | perl get_pvalue_rel_syn_codon_usage.pl 
+pvalue is terrible 0.999
+
+good things to look at that are close to e.coli vibrio, and Lactobacillus (similar environment)
+http://www.biomedcentral.com/1471-2148/5/34/figure/F1?highres=y
+
+#################################################################################
+# re-do all steps for a few fast-growing bacteria
+
+1. pyrococcus furiosus
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Pyrococcus_furiosus_COM1_uid169620/NC_018092.ffn
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Pyrococcus_furiosus_COM1_uid169620/NC_018092.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_018092.ffn p.furiosus.fa
+read 2064, discarded due to bad end or start 344 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl p.furiosus.fa NC_018092.fna p.furiosus_RBSidentify_input 
+run tompa_test/RBSidentify with not simulated, 7, 1
+ tompa_test/RBSidentify/RBSidentify give p.furiosus_RBSidentify_output as output
+tail -n +27 p.furiosus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > p.furiosus_profile_input
+look at this file to see if the highest 20 z scores (last column) are high enough - over 8
+tompa_test/profile/profile  with p.furiousis_profile_output 
+read the pattern off the weight matrix, with relative entropy > 0.4
+GAGGTG
+look at the .frn file to check the ends of 16S for CACCTC - found 
+
+cat p.furiosus.fa | perl ../useful_scripts/expected_codon_freq.pl > p.furiosus.codon_bias
+
+GAG 3, 2/2
+AGG 17, 5/6
+GGT 35, 3/4
+GTG 34, 3/4
+codon rank fisher (58/61, 44/61, 26/61, 27/61) = 0.849
+codon rank synonymmous codons fisher (1/2, 1/6, 1/4, 1/4) = 0.23
+
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s p.furiosus.fa -o p.furiosus_cps  -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c p.furiosus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_p_furiosus_SD_matches.csv&
+
+# signal score and t-test
+cat p.furiosus_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > p.furiosus.signal_scores.csv&
+cat p.furiosus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > p.furiosus.f1_scores.csv&
+
+# SD depletion score (ln (observed/expected))
+perl get_atcg_freq.pl -i p.furiosus.fa -s GAGGTG 
+observed = 354
+expected = 436.589698176501
+score is = -0.209696935139102
+
+2. bacteriodes fragilis
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacteroides_fragilis_638R_uid84217/NC_016776.ffn
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Bacteroides_fragilis_638R_uid84217/NC_016776.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_016776.ffn b.fragilis.fa
+read 4290, discarded due to bad end or start 330 and discarded due to stops in the middle: 1
+perl get_sequence_upstream_of_gene.pl b.fragilis.fa NC_016776.fna b.fragilis_RBSidentify_input
+tail -n +27 b.fragilis_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > b.fragilis_profile_input
+CTTTGC!!!
+look for GCAAAG  - NOT FOUND - NO GO
+
+3. pyrococcus horikoshii - have results
+GAGGTG
+from p.horikoshii_NC_000961.codon_bias
+
+GAG 3, 1/2
+AGG 9, 1/6
+GGT 30, 3/4
+GTG 37, 4/4 
+codon rank fisher (58/61,52/61,31/61,24/61) = 0.88
+codon rank synonymous codons (1/2,5/6,1/4,1/4) = 0.51
+
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv > 5_6_p_horikoshii_SD_matches.csv&
+cat p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > p.horikoshii.signal_scores.csv&
+cat p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > p.horikoshii.f1_scores.csv&
+
+# SD depletion score (ln (observed/expected))
+perl get_atcg_freq.pl -i p.horikoshii_NC_000961.fa -s GAGGTG
+observed = 320
+expected = 383.380900931498
+score is = -0.180708018583478
+
+4. b subtilis - have results
+AGGAGG
+
+AGG 59, 6/6
+GGA 14, 2/4
+GAG 10, 2/2
+codon rank fisher (2/61,47/61,51/61) = 0.26
+codon rank synonymous codons (1/6,2/4,1/2) = 0.38
+
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv > 5_6_b_subtilis_SD_matches.csv& 
+cat b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > b.subtilis.signal_scores.csv&
+cat b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > b.subtilis.f1_scores.csv&
+
+ # SD depletion score (ln (observed/expected))
+perl get_atcg_freq.pl -i b.subtilis_NC_000964.fa -s AGGAGG
+observed = 573
+expected = 882.407649631291
+score is = -0.431768420306753
+
+5. streptococcus pneumoniae 
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Streptococcus_pneumoniae_670_6B_uid52533/NC_014498.ffn
+wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Streptococcus_pneumoniae_670_6B_uid52533/NC_014498.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_014498.ffn s.pneumoniae.fa
+read 2352, discarded due to bad end or start 274 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl s.pneumoniae.fa NC_014498.fna s.pneumoniae_RBSidentify_input
+tail -n +27 s.pneumoniae_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > s.pneumoniae_profile_input
+AGGAG
+look for CTCCT - confirmed
+
+cat s.pneumoniae.fa | perl ../useful_scripts/expected_codon_freq.pl > s.pneumoniae.codon_bias
+
+AGG 59, 5/6
+GGA 18, 2/4
+GAG 16, 2/2
+codon rank fisher (2/61, 43/61,45/61) = 0.28
+codon rank synonymous codons (1/6,2/4,1/2) = 0.38
+
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s s.pneumoniae.fa -o s.pneumoniae_cps -z 1000&
+
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAG -c s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv > 5_6_s_pneumoniae_SD_matches.csv&
+cat s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv | perl signal_score_no_stops.pl > s.pneumoniae.signal_scores.csv&
+cat s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > s.pneumoniae.f1_scores.csv&
+
+ # SD depletion score (ln (observed/expected))
+perl get_atcg_freq.pl -i s.pneumoniae.fa -s AGGAG 
+observed = 1952
+expected = 1705.74962445485
+score is = 0.134849811441768
+
+
+############
+for the codon pair score heat map: Figure 3
+
+rm cp_heatmap_input.txt;
+perl paper_get_ALL_5_6_match_cps.pl -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c thermus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c e.rectale_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c r.torques_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c chloroflexus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c athrobacter_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c heliobacterium_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c methanobacterium_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c aquifex_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c thermotoga_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c thermoplasma_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c p.furiosus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c h.mediterranei_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c methanopyrus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt; sleep 1;
+perl paper_get_ALL_5_6_match_cps.pl -c methanococcus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt;
+perl paper_get_ALL_5_6_match_cps.pl -c sulfolobus_cps_pairwise_syn_shuffle_frm123.csv >> cp_heatmap_input.txt;
+
+ticks = {"E. coli", "B. subtilis", "T. scotoductus", "E. rectale", "R. torques", "C. aurantiacus", "S. pneumoniae", "M. hungatei", "A. arilaitensis", "H. modesticaldum", "M. lacus", "A. aeolicus", "T. neapolitana", "A. fulgidus", "T. volcanium", "P. furiosus", "P. horikoshii", "H. mediterranei", "M. kandleri", "M. aeolicus", "S. acidocaldarius"};
+
+ticks2 = {AAGAGG,ACGAGG,AGAAGG,AGCAGG,AGGAAG,AGGACG,AGGAGA,AGGAGC,AGGAGG,AGGAGT,AGGATG,AGGCGG,AGGGGG,AGGTGG,AGTAGG,ATGAGG,CGGAGG,GGGAGG,TGGAGG,AAGGAG,CAGGAG,GAGGAG,GGAGGA,GGAGGC,GGAGGG,GGAGGT,AAGGTG,CAGGTG,GAAGTG,GACGTG,GAGATG,GAGCTG,GAGGCG,GAGGGG,GAGGTA,GAGGTC,GAGGTG,GAGGTT,GAGTTG,GATGTG,GCGGTG,GGGGTG,GTGGTG,GGTGAA,GGTGAC,GGTGAG,GGTGAT};
+
+ticksR = {AGGAGG, AGGAGG, AGGAGG, AGGAGG, AGGAGG, AGGAG, AGGAG, AGGAG, AGGA, GGAGG, GGAGG, GGAGG, GGAGGT, GAGGTG, GAGGTG, GAGGTG, GAGGTG, GAGGTG, GGTGA, GGTGA, GGTGA};
+
+rticksR = {#, Style[ticksR[[#]], 21, Bold]} & /@ Range[21];
+rticks = {#, Style[ticks[[#]], 21, Bold]} & /@ Range[21];
+vticks = {#, Style[Rotate[ticks2[[#]], Pi/2], Bold, 21]} & /@ Range[47];
+
+MatrixPlot[{
+ ADD cp_heatmap_input.txt here
+}, FrameTicks -> {{rticks, rticksR}, {None, vticks}}]
+
+
+# NEW calculation
+cat e.coli_NC_000913.fa | perl ../useful_scripts/expected_codon_freq.pl > e.coli_NC_000913.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAGG -f e.coli_NC_000913.codon_bias
+
+cat b.subtilis_NC_000964.fa | perl ../useful_scripts/expected_codon_freq.pl > b.subtilis.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAGG -f b.subtilis.codon_bias
+
+cat thermus.fa | perl ../useful_scripts/expected_codon_freq.pl > thermus.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAGG -f thermus.codon_bias
+
+cat chloroflexus.fa | perl ../useful_scripts/expected_codon_freq.pl > chloroflexus.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAG -f chloroflexus.codon_bias
+
+cat s.pneumoniae.fa | perl ../useful_scripts/expected_codon_freq.pl > s.pneumoniae.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAG -f s.pneumoniae.codon_bias
+
+cat methanospirillum.fa | perl ../useful_scripts/expected_codon_freq.pl > methanospirillum.codon_bias
+perl paper_get_sd_p_value.pl -s AGGAG -f methanospirillum.codon_bias
+
+cat athrobacter.fa | perl ../useful_scripts/expected_codon_freq.pl > athrobacter.codon_bias
+perl paper_get_sd_p_value.pl -s AGGA -f athrobacter.codon_bias
+
+cat heliobacterium.fa | perl ../useful_scripts/expected_codon_freq.pl > heliobacterium.codon_bias
+perl paper_get_sd_p_value.pl -s GGAGG -f heliobacterium.codon_bias
+
+cat methanobacterium.fa | perl ../useful_scripts/expected_codon_freq.pl > methanobacterium.codon_bias
+perl paper_get_sd_p_value.pl -s GGAGG -f methanobacterium.codon_bias
+
+cat aquifex.fa | perl ../useful_scripts/expected_codon_freq.pl > aquifex.codon_bias
+perl paper_get_sd_p_value.pl -s GGAGG -f aquifex.codon_bias
+
+cat a.fulgidus_NC_000917.fa | perl ../useful_scripts/expected_codon_freq.pl > a.fulgidus_NC_000917.codon_bias
+perl paper_get_sd_p_value.pl -s GAGGTG -f a.fulgidus_NC_000917.codon_bias
+
+cat thermoplasma.fa | perl ../useful_scripts/expected_codon_freq.pl > thermoplasma.codon_bias
+perl paper_get_sd_p_value.pl -s GAGGTG -f thermoplasma.codon_bias
+
+cat p.furiosus.fa | perl ../useful_scripts/expected_codon_freq.pl > p.furiosus.codon_bias
+perl paper_get_sd_p_value.pl -s GAGGTG -f p.furiosus.codon_bias 
+
+cat p.horikoshii_NC_000961.fa | perl ../useful_scripts/expected_codon_freq.pl > p.horikoshii_NC_000961.codon_bias
+perl paper_get_sd_p_value.pl -s GAGGTG -f p.horikoshii_NC_000961.codon_bias
+
+cat methanopyrus.fa | perl ../useful_scripts/expected_codon_freq.pl > methanopyrus.codon_bias
+perl paper_get_sd_p_value.pl -s GGTGA -f methanopyrus.codon_bias
+
+cat methanococcus.fa | perl ../useful_scripts/expected_codon_freq.pl > methanococcus.codon_bias
+perl paper_get_sd_p_value.pl -s GGTGA -f methanococcus.codon_bias
+
+
+######
+try a few more strains:
+1. Eubacterium rectale, now called Agathobacter rectalis
+ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Eubacterium_rectale_ATCC_33656_uid29071/
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Eubacterium_rectale_ATCC_33656_uid29071/CP001107.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Eubacterium_rectale_ATCC_33656_uid29071/CP001107.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl CP001107.ffn e.rectale.fa
+perl get_sequence_upstream_of_gene.pl e.rectale.fa CP001107.fna e.rectale_RBSidentify_input
+tompa/RBSidentify
+tail -n +27 e.rectale_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > e.rectale_profile_input
+tompa/profile
+AGGAGG
+look for CCTCCT
+not found at the end of 16s rRNA - actually found by Bruce!!!
+1. cat e.rectale.fa | perl ../useful_scripts/expected_codon_freq.pl > e.rectale.codon_bias
+AGG frequency is 7.5
+2. Depletion Score
+perl get_atcg_freq.pl -i e.rectale.fa -s AGGAGG
+observed = 1442
+expected = 1022.02796951531
+score is = 0.344242180023917
+score is very positive - not depleted
+3. Codon Pair p-value
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s e.rectale.fa -o e.rectale -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c e.rectale_pairwise_syn_shuffle_frm123.csv > 5_6_e_rectale_SD_matches.csv&
+cat e.rectale_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > e.rectale.f1_scores.csv&
+0.043
+4. motif depletion p-value
+perl paper_get_sd_p_value.pl -s AGGAGG -f e.rectale.codon_bias
+0.793
+5. fisher test combined p_value Fisher.test(c(0.043,0.793))
+0.149
+6. get seququence after 16S rna
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Eubacterium_rectale_ATCC_33656_uid29071/CP001107.frn
+perl get_sequence_after_gene.pl CP001107.frn CP001107.fna CP001107_after_frn 
+
+
+2. Ruminococcus torques
+perl paper_get_sd_p_value.pl -s AGGAGG -f e.rectable.codon_biae
+ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Ruminococcus_torques_uid39169/
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Ruminococcus_torques_uid39169/FP929055.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Ruminococcus_torques_uid39169/FP929055.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl FP929055.ffn r.torques.fa
+perl get_sequence_upstream_of_gene.pl r.torques.fa FP929055.fna r.torques_RBSidentify_input
+tail -n +27 r.torques_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > r.torques_profile_input
+AGGAGG
+look for CCTCCT
+not found at the end of 16s rRNA - but actually found by Bruce
+1. cat r.torques.fa | perl ../useful_scripts/expected_codon_freq.pl > r.torques_codon_bias
+AGG frequency is 3.3
+2. Depletion Score
+perl get_atcg_freq.pl -i r.torques.fa -s AGGAGG
+observed = 523
+expected = 973.6269555538
+score is = -0.621446763701919
+slightly depleted
+3. Codon Pair p-value
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s r.torques.fa -o r.torques -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c r.torques_pairwise_syn_shuffle_frm123.csv > 5_6_r_torques_SD_matches.csv&
+cat r.torques_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > r.torques.f1_scores.csv&
+t_test value = 0.272
+4. motif depletion p value
+perl paper_get_sd_p_value.pl -s AGGAGG -f r.torques.codon_bias
+0.698
+5. fisher test combined p_value Fisher.test(c(0.272,0.698))
+0.505
+6. get seququence after 16S rna
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Ruminococcus_torques_uid39169/FP929055.frn
+perl get_sequence_after_gene.pl FP929055.frn FP929055.fna FP929055_after_frn 
+
+3. bacteriodes vulgatus
+ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Bacteroides_vulgatus_ATCC_8482_uid13378/
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Bacteroides_vulgatus_ATCC_8482_uid13378/CP000139.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Bacteroides_vulgatus_ATCC_8482_uid13378/CP000139.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl CP000139.ffn b.vulgatus.fa
+perl get_sequence_upstream_of_gene.pl b.vulgatus.fa CP000139.fna b.vulgatus_RBSidentify_input
+tail -n +27 b.vulgatus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > b.vulgatus_profile_input
+CTTTGC - just like bacteriodes fragilis
+look for GCAAAG
+not found
+1. cat b.vulgatus.fa | perl ../useful_scripts/expected_codon_freq.pl > b.vulgatus_codon_bias
+CTT and TTT are not particularly depleted
+2. Depletion Score 
+perl get_atcg_freq.pl -i b.vulgatus.fa -s CTTTGC
+observed = 1635
+expected = 770.864800729536
+score is = 0.751885080878055
+not depleted
+3. Codon Pair p-value
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s b.vulgatus.fa -o b.vulgatus -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s CTTTGC -c b.vulgatus_pairwise_syn_shuffle_frm123.csv > 5_6_b_vulgatus_SD_matches.csv&
+cat b.vulgatus_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > b.vulgatus.f1_scores.csv&
+0.09
+4. motif depletion p-value
+perl paper_get_sd_p_value.pl -s CTTTCG -f b.vulgatus_codon_bias
+0.621
+5. fisher test combined p_value Fisher.test(c(0.009,0.621))
+0.217
+6. get seququence after 16S rna
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Bacteroides_vulgatus_ATCC_8482_uid13378/CP000139.frn
+perl get_sequence_after_gene.pl CP000139.frn CP000139.fna CP000139_after_frn
+
+4. Haloferax mediterranii
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Haloferax_mediterranei_ATCC_33500_uid167315/NC_017941.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Haloferax_mediterranei_ATCC_33500_uid167315/NC_017941.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_017941.ffn haloferax.fa
+read 2951, discarded due to bad end or start 551 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl haloferax.fa NC_017941.fna haloferax_RBSidentify_input
+tail -n +27 haloferax_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > haloferax_profile_input
+GAGGTG - FOUND after all at the end!!! -re-do analysis
+1. cat haloferax.fa | perl ../useful_scripts/expected_codon_freq.pl > h.mediterranei.codon_bias
+AGG frequency is 1.1
+2. Depletion Score
+perl get_atcg_freq.pl -i haloferax.fa -s GAGGTG
+observed = 686
+expected = 611.536406779671
+score is = 0.114903137527617
+score is very positive - not depleted
+3. Codon Pair p-value 
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s haloferax.fa -o h.mediterranei -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c h.mediterranei_pairwise_syn_shuffle_frm123.csv > 5_6_h_mediterranei_SD_matches.csv&
+cat h.mediterranei_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > h.mediterranei.f1_scores.csv&
+0.039
+4. motif depletion p-value - take the avg value
+perl paper_get_sd_p_value.pl -s GAGGTG -f h.mediterranei.codon_bias
+0.75
+5. fisher test combined p_value Fisher.test(c(0.039, 0.75))
+0.133
+
+5. Sulfoglobus acidocaldarius
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid58379/NC_007181.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid58379/NC_007181.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_007181.ffn sulfolobus.fa
+read 2224, discarded due to bad end or start 593 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl sulfolobus.fa NC_007181.fna sulfolobus_RBSidentify_input
+tail -n +27 sulfolobus_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > sulfolobus_profile_input
+GGTGA - not found, like archae
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s sulfolobus.fa -o sulfolobus_cps -z 1000&
+TCACC
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Sulfolobus_acidocaldarius_DSM_639_uid13935/CP000077.frn
+perl get_sequences_after_gene.pl CP000077.frn NC_007181.fna CP000077_after_frn
+TCAC found at the end... loop?  consider shorter SD? consdier GGTGA
+1. cat sulfolobus.fa | perl ../useful_scripts/expected_codon_freq.pl > s.acidocaldarius.codon_bias
+AGG frequency is 16.2
+2. Depletion Score
+perl get_atcg_freq.pl -i sulfolobus.fa -s GGTGA
+observed = 1383
+expected = 1433.55713381979
+score is = -0.0359038090344944
+3. Codon Pair p-value 
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGTGA -c sulfolobus_cps_pairwise_syn_shuffle_frm123.csv > 5_6_s_acidocaldarius_SD_matches.csv&
+cat sulfolobus_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > s.acidocaldarius.f1_scores.csv&
+0.043
+4. motif depletion p_value
+perl paper_get_sd_p_value.pl -s GGTGA -f s.acidocaldarius.codon_bias 
+0.427
+5. fisher test combined p_value Fisher.test(c(0.043,0.427))
+0.092
+
+6. Thermotoga neapolitana
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermotoga_neapolitana_DSM_4359_uid59065/NC_011978.ffn
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Thermotoga_neapolitana_DSM_4359_uid59065/NC_011978.fna
+perl ../useful_scripts/keep_only_valid_orfs.pl NC_011978.ffn thermotoga.fa
+read 1937, discarded due to bad end or start 916 and discarded due to stops in the middle: 0
+perl get_sequence_upstream_of_gene.pl thermotoga.fa NC_011978.fna thermotoga_RBSidentify_input
+tail -n +27 thermotoga_RBSidentify_output | awk '{print $NF,$0}' | sort -nr | cut -f2- -d' ' > thermotoga_profile_input
+GGAGGT - in rRNA, but not at the end
+perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s thermotoga.fa -o thermotoga_cps -z 1000&
+perl get_sd_partial_matches.pl -s GGAGGT -c thermotoga_cps_pairwise_syn_shuffle_frm123.csv
+find ACCTCC
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_genbank/Bacteria/Thermotoga_neapolitana_DSM_4359_uid21023/CP000916.frn
+perl get_sequences_after_gene.pl CP000916.frn NC_011978.fna CP000916_after_frn
+found GGAGGT
+1. cat thermotoga.fa | perl ../useful_scripts/expected_codon_freq.pl > t.neapolitana.codon_bias
+AGG frequency is 19.5
+2. Depletion Score
+perl get_atcg_freq.pl -i thermotoga.fa -s GGAGGT
+observed = 388
+expected = 314.197174442534
+score is = 0.210984606704907
+positive, not depleted
+3. Codon Pair p-value
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GGAGGT -c thermotoga_cps_pairwise_syn_shuffle_frm123.csv > 5_6_t_neapolitana_SD_matches.csv&
+cat thermotoga_cps_pairwise_syn_shuffle_frm123.csv | perl f1_score_no_stops.pl > t.neapolitana.f1_scores.csv&
+0.197
+4. motif depletion p-value
+perl paper_get_sd_p_value.pl -s GGAGGT -f t.neapolitana.codon_bias
+0.955
+5. fisher test combined p-value Fisher.test(c(0.197,0.955))
+0.502
+
+########################
+# their hexamers with our calculation
+perl india_get_5or_6_match_to_sd_pairs.pl -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv -h accuccuu_hexamers.txt > india_5_6_e_coli_SD_matches.csv &
+perl india_get_5or_6_match_to_sd_pairs.pl -c b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv -h accuccuu_hexamers.txt > india_5_6_b_subtilis_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv -h accuccuu_hexamers.txt > india_5_6_s_pneumoniae_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv -h accuccua_hexamers.txt > india_5_6_m_hungatei_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c aquifex_cps_pairwise_syn_shuffle_frm123.csv -h accuccuu_hexamers.txt  > india_5_6_a_aeolicus_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv -h accuccua_hexamers.txt  > india_5_6_a_fulgidus_SD_matches.csv& 
+perl india_get_5or_6_match_to_sd_pairs.pl -c thermoplasma_cps_pairwise_syn_shuffle_frm123.csv -h accuccaa_hexamers.txt > india_5_6_t_volcanium_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c p.furiosus_cps_pairwise_syn_shuffle_frm123.csv -h accuccua_hexamers.txt  > india_5_6_p_furiosus_SD_matches.csv& 
+perl india_get_5or_6_match_to_sd_pairs.pl -c p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv -h accuccua_hexamers.txt  > india_5_6_p_horikoshii_SD_matches.csv& 
+perl india_get_5or_6_match_to_sd_pairs.pl -c methanopyrus_cps_pairwise_syn_shuffle_frm123.csv -h accuccag_hexamers.txt  > india_5_6_m_kandleri_SD_matches.csv&
+perl india_get_5or_6_match_to_sd_pairs.pl -c sulfolobus_cps_pairwise_syn_shuffle_frm123.csv -h accucaua_hexamers.txt  > india_5_6_s_acidocaldarius_SD_matches.csv&
+
+# our hexamers for their format 
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s AGGAGG -c e.coli_NC_000913_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_e_coli_SD_matches.csv &
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s AGGAGG -c b.subtilis_NC_000964_pairwise_syn_shuffle_frm123.csv > india_our_5_6_b_subtilis_SD_matches.csv& 
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s AGGAG -c s.pneumoniae_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_s_pneumoniae_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s AGGAG -c methanospirillum_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_m_hungatei_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GGAGG -c aquifex_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_a_aeolicus_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GAGGTG -c a.fulgidus_NC_000917_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_a_fulgidus_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GAGGTG -c thermoplasma_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_t_volcanium_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GAGGTG -c p.furiosus_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_p_furiosus_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GAGGTG -c p.horikoshii_NC_000961_pairwise_syn_shuffle_frm123.csv > india_our_5_6_p_horikoshii_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GGTGA -c methanopyrus_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_m_kandleri_SD_matches.csv&
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GGTGA -c sulfolobus_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_s_acidocaldarius_SD_matches.csv&
+
+time perl alisa_efficient_codon_pair_score_hexamers_v2.0.pl -s s_cerevisae_orf_coding_no_Mito_no_Plasmid.fasta -o cerevisiae_cps -z 1000&
+perl paper_get_5or_6_match_to_sd_pairs.pl -s AGGAGG -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv > 5_6_s_cerevisiae_SD_matches.csv &
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s AGGAGG -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_s_cerevisiae_SD_matches.csv &
+perl india_get_5or_6_match_to_sd_pairs.pl -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv -h accuccuu_hexamers.txt > india_5_6_s_cerevisiae_SD_matches.csv &
+
+perl india_get_our_paper_5or_6_match_to_sd_pairs.pl -s GAGGTG -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv > india_our_5_6_s_cerevisiae_SD_matches_volcanium.csv &
+perl paper_get_5or_6_match_to_sd_pairs.pl -s GAGGTG -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv > 5_6_s_cerevisiae_SD_matches_volcanium.csv &
+perl india_get_5or_6_match_to_sd_pairs.pl -c cerevisiae_cps_pairwise_syn_shuffle_frm123.csv -h accuccaa_hexamers.txt > india_5_6_s_cerevisiae_SD_matches_volcanium.csv &

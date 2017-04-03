@@ -24,7 +24,7 @@ for(my $i = 0; $i <= (length($sd_seq) - 3); $i++) {
 	$r_sum += $FREQ{$codon};
 }
 my $r_avg = $r_sum / (length($sd_seq)-2);
-print $r_product . "\t" . $r_sum . "\t" . $r_avg . "\n";
+#print $r_product . "\t" . $r_sum . "\t" . $r_avg . "\n";
 
 # generate all strings
 my @old_list = ("A","T","C","G");
@@ -46,15 +46,15 @@ my $sum_smaller = 0;
 foreach my $full_string (@old_list) {
 	my $product = 1;
 	my $sum = 0;
-	print $full_string . "\t";
+	#print $full_string . "\t";
 	for(my $i = 0; $i <= (length($sd_seq) - 3); $i++) {
 		my $codon = substr($full_string,$i,3);
-		print $FREQ{$codon} . "\t";
+		#print $FREQ{$codon} . "\t";
 		$product *= $FREQ{$codon};	
 		$sum += $FREQ{$codon};
 	}
 	my $avg = $sum / (length($sd_seq)-2);
-	print $product . "\t" . $avg . "\n";
+	#print $product . "\t" . $avg . "\n";
 	if ($product <= $r_product) {
 		$product_smaller++;
 	}
@@ -66,6 +66,7 @@ foreach my $full_string (@old_list) {
 	}
 }
 my $total_num = scalar (@old_list);
-print $r_product . "\t" . $r_avg . "\n";
-print $product_smaller . "\t" . $avg_smaller . "\n";
-print "product: " . $product_smaller/$total_num . "\tavg: " . $avg_smaller/$total_num . "\n";
+#print $r_product . "\t" . $r_avg . "\n";
+#print $product_smaller . "\t" . $avg_smaller . "\n";
+#print "product: " . $product_smaller/$total_num . "\tavg: " . $avg_smaller/$total_num . "\n";
+print $avg_smaller/$total_num;
