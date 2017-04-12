@@ -27,8 +27,8 @@ while (my $line = <IN>) {
 			my $problem = 0;
 			# this is not the first header line
 			# check that the protein starts with methionine and ends with a stop codon
-    		#TODO: uncomment: if((substr($seq,0,3) ne "ATG" ) && (substr($seq,0,3) ne "GTG" )) {
-    		if(substr($seq,0,3) ne "ATG" ) {
+    		if((substr($seq,0,3) ne "ATG" ) && (substr($seq,0,3) ne "GTG") && (substr($seq,0,3) ne "TTG") && (substr($seq,0,3) ne "CTG") && (substr($seq,0,3) ne "ATT") && (substr($seq,0,3) ne "ATC")) {
+    		#if(substr($seq,0,3) ne "ATG" ) {
 	        	$problem = 1;   
     		}   
     		my $end = substr($seq,(length($seq)-3),3);
@@ -40,7 +40,7 @@ while (my $line = <IN>) {
 				for(my $j=0;$j<length($seq)-3;$j=$j+3){
 					my $cod = substr($seq,$j,3);
 					if(($cod eq "TAA") || ($cod eq "TAG") || ($cod eq "TGA")) {
-						print "Problem, stop codon at position " . ($j+1) . "\n";	
+						#print "Problem, stop codon at position " . ($j+1) . "\n";	
 						$possible_problem++;
 					}
 				}
@@ -61,8 +61,8 @@ while (my $line = <IN>) {
 	}
 }
 my $problem = 0;
-#TODO: uncomment: if((substr($seq,0,3) ne "ATG" ) && (substr($seq,0,3) ne "GTG" )) {
-if(substr($seq,0,3) ne "ATG") {
+if((substr($seq,0,3) ne "ATG" ) && (substr($seq,0,3) ne "GTG") && (substr($seq,0,3) ne "TTG") && (substr($seq,0,3) ne "CTG") && (substr($seq,0,3) ne "ATT") && (substr($seq,0,3) ne "ATC")) {
+#if(substr($seq,0,3) ne "ATG") {
 	$problem = 1;   
 }   
 my $end = substr($seq,(length($seq)-3),3);
@@ -74,7 +74,7 @@ if ($problem == 0) {
 	for(my $j=0;$j<length($seq)-3;$j=$j+3){
 		my $cod = substr($seq,$j,3);
 		if(($cod eq "TAA") || ($cod eq "TAG") || ($cod eq "TGA")) {
-			print "Problem, stop codon at position " . ($j+1) . "\n";	
+			#print "Problem, stop codon at position " . ($j+1) . "\n";	
 			$possible_problem++;
 		}
 	}
@@ -88,4 +88,4 @@ if ($problem == 0) {
 }
 $read_seq++;
 
-print "read " . $read_seq . ", discarded due to bad end or start " . $discarded_seq . " and discarded due to stops in the middle: " . $to_discard_seq . "\n";
+#print "read " . $read_seq . ", discarded due to bad end or start " . $discarded_seq . " and discarded due to stops in the middle: " . $to_discard_seq . "\n";
