@@ -49,7 +49,7 @@ while(my $line = <GENE>) {
 	#if ($line =~ '^>.*:([c\d]*)-(.*) .*') { # we got the definition line
 	if ($line =~ '^>.*') { # we got the definition line
 		my @words = split(' ', $line);
-		my $idx = substr($words[3], 10, -1);
+		my $idx = substr($words[-1], 10, -1);
 		my $reverse = 0;
 		#if ($idx =~ 'c(.*)') {
 		if ($idx =~ 'complement(.*)') {
@@ -71,14 +71,18 @@ while(my $line = <GENE>) {
 			my $before_seq = substr($reference_string,$idx+1,40);
         		my $reverse_complement = reverse($before_seq); # reverse the string
         		$reverse_complement =~ tr/ACGTacgt/TGCAtgca/; # get the complement
+			if (length($reverse_complement) == 40) {
 				print OUT $reverse_complement . "|\n";
+			}
 		#	}
 		} else { # not reversed
 		#	if (substr($reference_string,$idx,3) ne "ATG") {	
 		#		print OUT "Problem with: " . substr($reference_string,$idx,3) . "\t" . $idx . "\n";
 		#	} else {
 				my $before_seq = substr($reference_string,$idx-40,40);
-				print OUT $before_seq . "|\n";
+				if (length($before_seq) == 40) {
+					print OUT $before_seq . "|\n";
+				}
 		#	}
 
 		}
