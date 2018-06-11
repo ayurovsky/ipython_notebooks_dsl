@@ -1,0 +1,25 @@
+library('seqinr')
+#args = commandArgs(trailingOnly=TRUE)
+args = commandArgs(TRUE)
+
+random_genes <- function(x) {
+  a <- s2c(c2s(data[[x]]))[4:(getLength(data[[x]])-3)] ##excluding the start and stop codons
+  b <- permutation(a,modele = 'syncodon') ##this is the shuffling function
+  bb <- paste0(c2s(c(s2c(c2s(data[[x]]))[1:3],b,s2c(c2s(data[[x]]))[(getLength(data[[x]])-3):(getLength(data[[x]]))])))
+} ##this is a function that will be used below to create shuffled gene sequences given an input of the CDS fasta file
+  
+freq_final <- matrix(0,nrow=4096,ncol=2) #250)
+data <- read.fasta(args[1],as.string=T,seqonly = T,strip.desc=T)
+##change the number in the next line from 250 to any other based on the number of randomised genomes you wish to create
+for(l in 1:2) { #250) {
+  data1 <- NULL
+  test <- NULL
+  data1 <- lapply(1:length(data),random_genes)
+  test <- sapply(1:length(data1),function(x) count(s2c(c2s(data1[[x]])),wordsize = 6,freq = T,alphabet = s2c("ACGT")))
+  freq_final[,l] <- as.numeric(rowMeans(test))
+}
+freq_mean <- rowMeans(freq_final) ##mean of hexamer frequency across 250 randomisations
+freq_sd <- sapply(1:nrow(freq_final), function(x) sd(freq_final[x,])) ##std deviation
+final_table <- NULL
+final_table <- data.frame(freq_mean,freq_sd)
+write.csv(final_table,file= args[2])

@@ -1,0 +1,48 @@
+library('seqinr')
+args = commandArgs(trailingOnly=TRUE)
+
+####finding aff5 values for an organism & selecting SD-like hexamers####
+#anti_sd_seq <- args[1] #change this sequence for every organism
+#h <- words(length = 5,alphabet = s2c("ACGT")) ##these are pentamers
+
+#a <- NULL
+#for(j in 1:length(h)) {
+#  a[j] <- paste0(h[j],"&",anti_sd_seq)
+#}
+#write(as.vector(a), file=args[2])
+#system(paste0("RNAsubopt <", args[2], " >", args[3], " -e 1 -d 2"))
+data3 <- read.delim(args[1],sep="",header=F,col.names=c("hexa","aff","div"))
+data4 <- subset(data3, data3$div==100)
+b <- NULL
+for (k in 1:nrow(data4)) {
+  b[k] <- data4$aff[k]/data4$div[k]
+}
+aff5 <- min(b) ##aff5 is the maximum pentamer affinity to anti-SD sequence
+#############
+
+aff_file <- read.csv(args[2])
+h <- words(length=6,alphabet = s2c("ACGT")) #these are all the hexamers
+random_freq <- read.csv(args[3],header=T)
+random_freq <- as.numeric(random_freq$freq_mean)
+
+orig_freq <- read.csv(args[4],header=T)
+orig_freq <- as.numeric(orig_freq$hex_freq)
+
+
+corrected_freq <- orig_freq-random_freq
+
+median_hf_shuff <- median(corrected_freq[which(aff_file$x<=aff5)])
+#write(median_hf_shuff,args[5])
+
+median_ln <- median(log(orig_freq[which(aff_file$x<=aff5)]/random_freq[which(aff_file$x<=aff5)]))
+median <- median(orig_freq[which(aff_file$x<=aff5)]/random_freq[which(aff_file$x<=aff5)])
+print(median)
+#print(median_ln)
+#write(median_ln,args[5],append = TRUE)
+
+obs_vs_random <- wilcox.test(orig_freq[which(aff_file$x<=aff5)],random_freq[which(aff_file$x<=aff5)],paired=T)
+
+p_value <- obs_vs_random$p.value ##this is the p-value for a single organism
+
+#write(p_value,args[5],append = TRUE)
+print(p_value)

@@ -1,0 +1,43 @@
+needed files:
+~/R_libs: ade4  segmented  seqinr
+ViennaRNA-2.3.5/
+
+ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/
+
+
+------
+drosophila melanogaster
+GCA_000001215.4_Release_6_plus_ISO1_MT
+Rscript generate_250_syn.Rscript GCA_000001215.4_Release_6_plus_ISO1_MT_cds_from_genomic.fna GCA_000001215.4_Release_6_plus_ISO1_MT_random250_syn_shuff_mean_freq.csv&
+45 hrs
+Rscript generate_real.Rscript GCA_000001215.4_Release_6_plus_ISO1_MT_cds_from_genomic.fna GCA_000001215.4_Release_6_plus_ISO1_MT_real_mean_freq.csv &
+7 minutes
+Rscript get_p_value_with_india_hexamers.Rscript accuccuu_output.txt accuccuu_hexamer_anti_sd_affinity.csv GCA_000001215.4_Release_6_plus_ISO1_MT_random250_syn_shuff_mean_freq.csv GCA_000001215.4_Release_6_plus_ISO1_MT_real_mean_freq.csv
+
+p-value 0.898
+depletion percent 0.09 Percent (= 1-0.9990957)*100
+
+------
+chlorella variabilis
+GCA_000147415.1_v_1.0_cds
+Rscript generate_250_syn.Rscript GCA_000147415.1_v_1.0_cds_from_genomic.fna GCA_000147415.1_v_1.0_cds_syn_shuff_mean_freq.csv&
+Rscript generate_real.Rscript GCA_000147415.1_v_1.0_cds_from_genomic.fna GCA_000147415.1_real_mean_freq.csv&
+Rscript get_p_value_with_india_hexamers.Rscript accuccuu_output.txt accuccuu_hexamer_anti_sd_affinity.csv GCA_000147415.1_v_1.0_cds_syn_shuff_mean_freq.csv GCA_000147415.1_real_mean_freq.csv
+
+p-value 0.638
+depletion percent 2 Percent 
+
+
+------
+c-albicans - sanity check, re-doing
+GCA_000149445.2_ASM14944v2_cds
+Rscript generate_250_syn.Rscript GCA_000149445.2_ASM14944v2_cds_from_genomic.fna GCA_000149445.2_ASM14944v2_cds_syn_shuff_mean_freq.csv&
+Rscript generate_real.Rscript GCA_000149445.2_ASM14944v2_cds_from_genomic.fna GCA_000149445.2_ASM14944v2_cds_real_mean_freq.csv&
+7hrs
+
+Rscript get_p_value_with_india_hexamers.Rscript accuccuu_output.txt accuccuu_hexamer_anti_sd_affinity.csv GCA_000149445.2_ASM14944v2_cds_syn_shuff_mean_freq.csv GCA_000149445.2_ASM14944v2_cds_real_mean_freq.csv
+
+0.0009
+depletion percent 28 Percent
+
+very close to the strain used in the paper ...

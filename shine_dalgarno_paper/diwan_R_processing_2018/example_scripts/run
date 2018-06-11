@@ -1,0 +1,30 @@
+nohup python3 -u run_generate_250_syn.py 0 > log_run_genrate_0.py&
+nohup python3 -u run_generate_250_syn.py 1 > log_run_genrate_1.py&
+nohup python3 -u run_generate_250_syn.py 2 > log_run_genrate_2.py&
+nohup python3 -u run_generate_250_syn.py 3 > log_run_genrate_3.py&
+nohup python3 -u run_generate_250_syn.py 4 > log_run_genrate_4.py&
+nohup python3 -u run_generate_250_syn.py 5 > log_run_genrate_5.py&
+nohup python3 -u run_generate_250_syn.py 6 > log_run_genrate_6.py&
+nohup python3 -u run_generate_250_syn.py 7 > log_run_genrate_7.py&
+nohup python3 -u run_generate_250_syn.py 8 > log_run_genrate_8.py&
+nohup python3 -u run_generate_250_syn.py 9 > log_run_genrate_9.py&
+nohup python3 -u run_generate_250_syn.py 10 > log_run_genrate_10.py&
+nohup python3 -u run_generate_250_syn.py 11 > log_run_genrate_11.py&
+nohup python3 -u run_generate_250_syn.py 12 > log_run_genrate_12.py&
+nohup python3 -u run_generate_250_syn.py 13 > log_run_genrate_13.py&
+nohup python3 -u run_generate_250_syn.py 14 > log_run_genrate_14.py&
+nohup python3 -u run_generate_250_syn.py 15 > log_run_genrate_15.py&
+nohup python3 -u run_generate_250_syn.py 16 > log_run_genrate_16.py&
+nohup python3 -u run_generate_250_syn.py 17 > log_run_genrate_17.py&
+nohup python3 -u run_generate_250_syn.py 18 > log_run_genrate_18.py&
+nohup python3 -u run_generate_250_syn.py 19 > log_run_genrate_19.py&
+nohup python3 -u run_generate_250_syn.py 20 > log_run_genrate_20.py&
+nohup python3 -u run_generate_250_syn.py 21 > log_run_genrate_21.py&
+nohup python3 -u run_generate_250_syn.py 22 > log_run_genrate_22.py&
+nohup python3 -u run_generate_250_syn.py 23 > log_run_genrate_23.py&
+nohup python3 -u run_generate_250_syn.py 24 > log_run_genrate_24.py&
+nohup python3 -u run_generate_250_syn.py 25 > log_run_genrate_25.py&
+nohup python3 -u run_generate_250_syn.py 26 > log_run_genrate_26.py&
+
+
+nohup python3 -u run_generate_real.py > log_run_genrate_real.py&

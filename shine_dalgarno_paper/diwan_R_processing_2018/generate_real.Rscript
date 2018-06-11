@@ -1,0 +1,10 @@
+library('seqinr')
+args = commandArgs(trailingOnly=TRUE)
+
+h <- words(length=6,alphabet = s2c("ACGT")) #these are all the hexamers
+data <- read.fasta(args[1],as.string=T,seqonly = T,strip.desc=T)
+test <- sapply(1:length(data),function(x) count(s2c(c2s(data[[x]])),wordsize = 6,freq = T,alphabet = s2c("ACGT")))
+
+hex_freq <- as.numeric(rowMeans(test))
+final_table <- cbind(h,hex_freq)
+write.csv(final_table,file = args[2])
